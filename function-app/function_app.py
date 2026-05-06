@@ -31,7 +31,6 @@ def my_orchestrator(context: df.DurableOrchestrationContext):
     
     # 5. Return {"status": "completed", "report_url": <report_url>}
     return {"status": "completed", "report_url": report_url}
-    pass
 
 @app.activity_trigger(input_name="order")
 def validate_activity(order: dict) -> dict:
@@ -43,7 +42,6 @@ def validate_activity(order: dict) -> dict:
     response.raise_for_status()
     # 4. Return the parsed JSON response
     return response.json()
-    pass
 
 @app.activity_trigger(input_name="order")
 def report_activity(order: dict) -> str:
@@ -54,6 +52,8 @@ def report_activity(order: dict) -> str:
         ContainerGroupRestartPolicy, ContainerGroupIdentity, ResourceIdentityType
     )
     from azure.identity import DefaultAzureCredential
+    from azure.storage.blob import generate_blob_sas, BlobSasPermissions
+    from datetime import datetime, timedelta, timezone
 
     sub_id   = os.environ["SUBSCRIPTION_ID"]
     rg       = os.environ["REPORT_RG"]
@@ -68,47 +68,6 @@ def report_activity(order: dict) -> str:
     rollnum = rg.split("-")[-1]
     mi_id = f"/subscriptions/{sub_id}/resourcegroups/{rg}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/oidc-msi-b9ad"
     
-    # TODO: Create the container group
-    # Replace the `None` values below with the correct properties.
-    # Hint: Follow the structure shown in the skeleton.
-    
-    # group = ContainerGroup(
-    #     location=loc, os_type=OperatingSystemTypes.linux,
-    #     restart_policy=ContainerGroupRestartPolicy.never,
-    #     identity=ContainerGroupIdentity(
-    #         type=ResourceIdentityType.user_assigned,
-    #         user_assigned_identities={mi_id: {}}
-    #     ),
-    #     image_registry_credentials=[ImageRegistryCredential(
-    #         server=os.environ["ACR_SERVER"],
-    #         username=os.environ["ACR_USERNAME"],
-    #         password=os.environ["ACR_PASSWORD"])],
-    #     containers=[Container(
-    #         name="report", image=image,
-    #         resources=ResourceRequirements(
-    #             requests=ResourceRequests(cpu=1.0, memory_in_gb=1.5)),
-    #         environment_variables=[
-    #             EnvironmentVariable(name="ORDER_ID", value=order_id),
-    #             EnvironmentVariable(name="ORDER_JSON", value=json.dumps(order)),
-    #             EnvironmentVariable(name="STORAGE_ACCOUNT_URL", value=os.environ["STORAGE_ACCOUNT_URL"]),
-    #             EnvironmentVariable(name="AZURE_CLIENT_ID", value=os.environ["AZURE_CLIENT_ID"]),
-    #         ])])
-    # 
-    # client.container_groups.begin_create_or_update(rg, name, group).result()
-
-    # Poll until Succeeded (or 5 min max)
-    # for _ in range(60):
-    #     info = client.container_groups.get(rg, name)
-    #     state = info.instance_view.state if info.instance_view else None
-    #     if state in ("Succeeded", "Failed"):
-    #         break
-    #     time.sleep(5)
-
-    # Clean up so it stops being a visible resource
-    # client.container_groups.begin_delete(rg, name)
-
-    # return f"{os.environ['STORAGE_ACCOUNT_URL']}/reports/{order_id}.pdf"
-
     # Create the container group
     group = ContainerGroup(
         location=loc, 
@@ -147,5 +106,18 @@ def report_activity(order: dict) -> str:
     # Clean up so it stops being a visible resource
     client.container_groups.begin_delete(rg, name)
 
-    return f"{os.environ['STORAGE_ACCOUNT_URL']}/reports/{order_id}.pdf"
-    pass
+    # SAS Generation Logic
+    # Note: Requires STORAGE_ACCOUNT_KEY in environment variables
+    account_key = os.environ["STORAGE_ACCOUNT_KEY"]
+    account_name = os.environ["STORAGE_ACCOUNT_URL"].split("//")[1].split(".")[0]
+    
+    sas_token = generate_blob_sas(
+        account_name=account_name,
+        container_name="reports",
+        blob_name=f"{order_id}.pdf",
+        account_key=account_key,
+        permission=BlobSasPermissions(read=True),
+        expiry=datetime.now(timezone.utc) + timedelta(hours=1)
+    )
+    
+    return f"{os.environ['STORAGE_ACCOUNT_URL']}/reports/{order_id}.pdf?{sas_token}"
