@@ -68,11 +68,23 @@ Description: Overview of the Azure Container Registry `pa426100344` using the Ba
 
 Description: Successful local Docker build outputs for the `validate-api`, `report-job`, and `func-app` images.
 
-### Evidence 2.3: ACR Repositories
+### Evidence 2.3: Local Validator Test
+
+![Local Validator Test](docs/task2_4_local_test.png)
+
+Description: Screenshot of a successful local test of the validator API (POST /validate) returning the expected JSON response.
+
+### Evidence 2.4: ACR Pushes
+
+![ACR Pushes](docs/task2_5_pushes.png)
+
+Description: CLI output confirming that all three images were successfully pushed to the Azure Container Registry.
+
+### Evidence 2.5: ACR Repositories
 
 ![ACR Repositories](docs/task2_3_acr_repos.png)
 
-Description: ACR repository list confirming that all three container images have been successfully tagged and pushed.
+Description: ACR repository list confirming that `validate-api`, `report-job`, and `func-app` are available in the registry.
 
 ---
 
@@ -214,15 +226,19 @@ Description: The complete happy path: from form submission to polling status and
 
 ### Evidence 7.3: Backend Participation
 
-![Backend Evidence](docs/task7_3_backend_participation.png)
+![AKS Pods](docs/task7_3_backend_participation.png)
+![ACI Spawned](docs/task7_3_aci_spawned.png)
+![Blob Evidence](docs/task7_3_blob_evidence.png)
+![AKS Logs](docs/task7_3_aks_logs.png)
 
-Description: Evidence of all services participating in the flow, showing logs and pods active during the orchestration.
+Description: Evidence of all services participating: AKS pod status, ACI job creation, Blob PDF storage, and AKS validator logs showing processed traffic.
 
 ### Evidence 7.4: Reject Path UI
 
-![Reject Path](docs/task7_4_reject_path.png)
+![Reject UI](docs/task7_4_reject_path.png)
+![Monitor Reject](docs/task7_4_monitor_reject.png)
 
-Description: UI showing a rejected order message when a quantity greater than 100 is submitted.
+Description: The reject path demonstrated in the UI for quantity > 100, and the corresponding Function Monitor status showing the orchestration completed successfully with a rejected result.
 
 ### Evidence 7.5: Resource Group Overview
 
