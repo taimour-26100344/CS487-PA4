@@ -224,6 +224,12 @@ Description: Evidence of all services participating in the flow, showing logs an
 
 Description: UI showing a rejected order message when a quantity greater than 100 is submitted.
 
+### Evidence 7.5: Resource Group Overview
+
+![Resource Group Overview](docs/resource_group_overview.png)
+
+Description: Overview of the resource group `rg-sp26-26100344` showing all deployed resources, including App Service, Function App, AKS, ACR, and Storage Account.
+
 ---
 
 ## Task 8: Write-up and Architecture Diagram (5 points)
@@ -255,9 +261,9 @@ Implementing this flow with two plain HTTP-triggered functions would be signific
 
 ### Question 8.5: Cost Review
 
-![Cost Analysis](docs/resource_group_overview.png)
+![Cost Analysis](docs/cost_analysis.png)
 
-Description: Based on resource consumption, the AKS cluster (specifically the Standard_B2s node) is the most expensive resource because it runs 24/7, whereas other services like ACI and Functions are billed based on usage.
+Description: The cost analysis for the resource group shows a total actual cost of approximately $0.18 for the current billing period. The primary cost driver is the Azure Container Registry ($0.16), while other services like Storage, App Service, and Container Instances have incurred negligible costs (<$0.01) due to their consumption-based or small-scale usage during the assignment.
 
 ### Question 8.6: Challenges Faced
 
